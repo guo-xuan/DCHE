@@ -219,8 +219,15 @@ public class EveTwoLoci {
 
 	public double[] evaluateOneSnp(int[] combinations, Datag _SNPData) {
 		int n = 0;
-		int i = 9;
+		int i = 3;
 		n = _SNPData.getDistribution(combinations, combinations.length, matrix, arrEmpty);
+		for (int j = 0; j < i; j++) {
+			if (arrEmpty[j]) {
+				if (matrix[0][j] == 0 && matrix[1][j] == 0) {
+					arrEmpty[j] = false;
+				}
+			}
+		}
 		double[] result = { 0, 1 };
 		if (n > 0) {
 			result[0] = chiCal.cal(matrix, arrEmpty, i);
