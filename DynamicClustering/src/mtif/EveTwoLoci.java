@@ -23,6 +23,18 @@ public class EveTwoLoci {
 
 	private Phi phi = new Phi();
 
+	private int[] arrStatus = new int[5];
+	private int[] tempCase;
+	private int[] tempControl;
+	
+	public EveTwoLoci() {
+	}
+
+	public EveTwoLoci(Datag SNPData) {
+		tempCase = new int[SNPData.nEleCase];
+		tempControl = new int[SNPData.nEleCont];
+	}
+
 	public double evaluate3(int[] combinations, Datag _SNPData) {
 		listFast.Thre = 0.05;
 		int n = 0;
@@ -202,6 +214,76 @@ public class EveTwoLoci {
 			}
 			if (n <= numGroup)
 				break;
+			for (int j = 0; j < i; j++) {
+				if (!arrEmpty[j])
+					continue;
+				calculator.setVectors(matrix, j, i);
+				listFast.add(j, i, calculator.calculateChi2());
+			}
+			// listFast.sort();
+			i++;
+		}
+
+		// calculate the final chisquare value;
+		// return chiCal.cal(matrix, arrEmpty);
+		return result;
+	}
+
+	public double evaluate2Par(int[] combinations, Datag _SNPData) {
+		int n = 0;
+		int i = 9;
+		n = _SNPData.getDistributionPar(combinations, combinations.length, matrix, arrEmpty, arrStatus, tempCase,
+				tempControl);
+		double result = 1;
+		// if n < numGroup
+		if (n >= 2 && n <= numGroup) {
+			result = chiCal.cal(matrix, arrEmpty, i);
+			result = ChiSquare2.pValue(n - 1, result);
+			return result;
+		}
+		// from the back to front
+		listFast.clean();
+		for (i = 1; i < n; i++) {
+			if (!arrEmpty[i])
+				continue;
+			for (int j = 0; j < i; j++) {
+				if (!arrEmpty[j])
+					continue;
+				calculator.setVectors(matrix, j, i);
+				listFast.add(j, i, calculator.calculateChi2());
+			}
+		}
+		// listFast.sort();
+		ListAscendListElement pair;
+
+		double temp;
+		i = n;
+		while (n > numGroup) {
+			// combine first
+			// pair = listFast.getTop(arrEmpty);
+			pair = listFast.getTop();
+			if (pair == null) {
+				if (result == 1) {
+					result = chiCal.cal(matrix, arrEmpty, i);
+					result = ChiSquare2.pValue(n - 1, result);
+				}
+				return result;
+			}
+			matrix[0][i] = matrix[0][pair.id1] + matrix[0][pair.id2];
+			matrix[1][i] = matrix[1][pair.id1] + matrix[1][pair.id2];
+			arrEmpty[i] = true;
+			arrEmpty[pair.id1] = false;
+			arrEmpty[pair.id2] = false;
+			n--;
+			if (n <= numGroupBound) {
+				temp = chiCal.cal(matrix, arrEmpty, i + 1);
+				temp = ChiSquare2.pValue(n - 1, temp);
+				if (temp < result)
+					result = temp;
+			}
+			if (n <= numGroup){
+				break;
+			}
 			for (int j = 0; j < i; j++) {
 				if (!arrEmpty[j])
 					continue;
