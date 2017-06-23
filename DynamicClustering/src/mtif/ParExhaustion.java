@@ -18,6 +18,13 @@ public class ParExhaustion implements Runnable {
 	
 	private int[] iaSnpTasks;
 	private EveTwoLoci eve;
+	
+	public ParExhaustion(ArrayList<Integer> _aiSnps){
+		iaSnpTasks = new int[_aiSnps.size()];
+		for(int i=0;i<_aiSnps.size();i++){
+			iaSnpTasks[i] = _aiSnps.get(i);
+		}
+	}
 
 	public static void initilizeMemory(int _nCase, int _nSample, int _nSNP, ArrayList<Integer> _aiSnpIdxInEachFile) {
 		iNumTotalSamples = _nSample;
@@ -72,6 +79,11 @@ public class ParExhaustion implements Runnable {
 	public void run() {
 		if(iOrder == 2){
 			eve = new EveTwoLoci(SNPData);
+			if(aiSnpIdxInEachFile.size()==1){
+				testOneFile();
+			}else{
+				testTwoFiles();
+			}
 		}
 	}
 	
@@ -80,13 +92,23 @@ public class ParExhaustion implements Runnable {
 	}
 	
 	private void testOneFile(){
-		
+		int[] combinations = new int[2];
+		for(int i=0;i<iaSnpTasks.length;i++){
+			combinations[0] = iaSnpTasks[i];
+			for(int j=i+1;j<iNumSnps;j++){
+				combinations[1] = j;
+				eve.evaluate2Par(combinations, SNPData);
+			}
+		}
 	}
 	
 	private void testTwoFiles(){
+		int[] combinations = new int[2];
 		for(int i=0;i<iaSnpTasks.length;i++){
+			combinations[0] = iaSnpTasks[i];
 			for(int j=aiSnpIdxInEachFile.get(1);j<iNumSnps;j++){
-				
+				combinations[1] = j;
+				eve.evaluate2Par(combinations, SNPData);
 			}
 		}
 	}

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import mtif.Exhaustion;
 import mtif.ParExhaustion;
@@ -27,6 +28,7 @@ public class StandAlone {
 	private static String strList = "[SIZELIST]";
 
 	private static ArrayList<String> asGwasFiles = new ArrayList<String>();
+	private static ArrayList<Integer> aiSnpIdxInEachFile;
 	private static int iOrder = 0;
 	private static String sOutputFile;
 	private static int iNumTotalSamples;
@@ -35,18 +37,70 @@ public class StandAlone {
 
 	public static void main(String[] args) {
 
+		long beforeUsedMem=Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
+		
+		// System.out.println("DCHE begin.");
+		
 		parse_option(args);
 		setDataSize();
 		ParExhaustion.loadingData(asGwasFiles);
 		ParExhaustion.setOrder(iOrder);
 
-		int iPoolSize = 5;
+		int iPoolSize = 2 * Runtime.getRuntime().availableProcessors();
+		int iNumTasks = 200;
 		ExecutorService taskList = Executors.newFixedThreadPool(iPoolSize);
-		for (int i = 0; i < 5; i++) {
-			taskList.execute(new ParExhaustion());
+		ArrayList<Integer> aiSnps = new ArrayList<Integer>();
+		if(asGwasFiles.size()==1){
+			for (int i = 0; i < iNumTasks; i++) {
+				aiSnps.clear();
+				int iSnpIdx = i;
+				while(iSnpIdx<iNumSnps){
+					aiSnps.add(iSnpIdx);
+					iSnpIdx += iNumTasks;
+				}
+				taskList.execute(new ParExhaustion(aiSnps));
+			}
+		}else{
+			for (int i = 0; i < iNumTasks; i++) {
+				aiSnps.clear();
+				int iSnpIdx = i;
+				while(iSnpIdx<aiSnpIdxInEachFile.get(1)){
+					aiSnps.add(iSnpIdx);
+					iSnpIdx += iNumTasks;
+				}
+				taskList.execute(new ParExhaustion(aiSnps));
+			}
 		}
-
-		if (true) {
+		taskList.shutdown();
+		
+		boolean bParellelTest = true;
+		
+		if (bParellelTest) {
+			try {
+				while(!taskList.awaitTermination(1, TimeUnit.SECONDS)){
+					
+				}
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			long afterUsedMem=Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
+			
+			float actualMemUsed=(float) (((float) (afterUsedMem-beforeUsedMem))/(1024.0*1024.0*1024.0));
+			
+			try {
+				FileWriter fwR = new FileWriter(sOutputFile, true);
+				fwR.write("Memory Usage\t");
+				fwR.write(Float.toString(actualMemUsed));
+				fwR.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			// System.out.println(Float.toString(actualMemUsed));
+			
+			// System.out.println("DCHE done.");
 			return;
 		}
 
@@ -203,7 +257,7 @@ public class StandAlone {
 		}
 		
 		// get number of SNPs
-		ArrayList<Integer> aiSnpIdxInEachFile = new ArrayList<Integer>();
+		aiSnpIdxInEachFile = new ArrayList<Integer>();
 		for (int i = 0; i < asGwasFiles.size(); i++) {
 			bIsSnp = false;
 			try {
