@@ -77,13 +77,13 @@ public class Datag {
 				for (; j < sLine.length(); j++) {
 					if (sLine.charAt(j) == Seperator) {
 						iSnpVal = Integer.parseInt(sb.toString());
+						sb.delete(0, sb.length());
 						if (iSnpVal >= 3) {
 							continue;
 						} else {
 							iCase[iSnpIdx * 3 + iSnpVal][idxCase / len] |= (mask << (idxCase % len));
 						}
 						iSnpIdx += 1;
-						sb.delete(0, sb.length());
 					} else {
 						sb.append(sLine.charAt(j));
 					}
@@ -91,25 +91,25 @@ public class Datag {
 				// the last not stored SNP
 				if (sb.length() > 0) {
 					iSnpVal = Integer.parseInt(sb.toString());
+					sb.delete(0, sb.length());
 					if (iSnpVal >= 3) {
 						continue;
 					} else {
 						iCase[iSnpIdx * 3 + iSnpVal][idxCase / len] |= (mask << (idxCase % len));
 					}
 					iSnpIdx += 1;
-					sb.delete(0, sb.length());
 				}
 			} else {
 				for (; j < sLine.length(); j++) {
 					if (sLine.charAt(j) == Seperator) {
 						iSnpVal = Integer.parseInt(sb.toString());
+						sb.delete(0, sb.length());
 						if (iSnpVal >= 3) {
 							continue;
 						} else {
 							iCont[iSnpIdx * 3 + iSnpVal][idxCont / len] |= (mask << (idxCont % len));
 						}
 						iSnpIdx += 1;
-						sb.delete(0, sb.length());
 					} else {
 						sb.append(sLine.charAt(j));
 					}
@@ -117,13 +117,13 @@ public class Datag {
 				// the last not stored SNP
 				if (sb.length() > 0) {
 					iSnpVal = Integer.parseInt(sb.toString());
+					sb.delete(0, sb.length());
 					if (iSnpVal >= 3) {
 						continue;
 					} else {
 						iCont[iSnpIdx * 3 + iSnpVal][idxCont / len] |= (mask << (idxCont % len));
 					}
 					iSnpIdx += 1;
-					sb.delete(0, sb.length());
 				}
 			}
 		}

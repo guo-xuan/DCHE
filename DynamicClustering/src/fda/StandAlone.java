@@ -244,6 +244,9 @@ public class StandAlone {
 		try {
 			br = new BufferedReader(new FileReader(asGwasFiles.get(0)));
 			while ((sLine = br.readLine() ) != null){
+				if(sLine.isEmpty()){
+					break;
+				}
 				if(sLine.charAt(0)=='1'){
 					iNumCases += 1;
 				}
